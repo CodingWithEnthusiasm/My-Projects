@@ -1,0 +1,8 @@
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.csproj.SuggestedBindingRedirects.cache
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.GUI_project.resources
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.Login.resources
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.csproj.GenerateResource.cache
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.AssemblyInfoInputs.cache
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.AssemblyInfo.cs
+C:\Users\Максим\Desktop\GUI_project\GUI_project\obj\Debug\net48\GUI_project.csproj.CoreCompileInputs.cache
