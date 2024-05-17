@@ -1,8 +1,10 @@
-The Assembly calculator file can be runned on any Debian-based system (like Ubuntu) with NASM shell installed on it 
+Assembly calculator is a simple single digit calcularo project with multiple operators available which can be runned on any Debian-based system (like Ubuntu) with NASM shell installed on it 
 
-The C++ SDL graphics project can be runned on any IDE which supports C++ and SDL library
+C++ SDL graphics project which generates a simple 3D figure image and can be runned on any IDE which supports C++ and SDL library
 
-The StudentService project is a project created with a use of .NET framework and MySQL data base. To run it you would need both Visual Studio and MySQL data base installed locally. 
+GeoPulse application is a navigation application created with Python programming language and using OpenCage and OpenRoute services for converting actual addresses into coordinates points and Folium for the usage of interactive map, 
+
+StudentService project is a project created with a use of .NET framework and MySQL data base and which allows the user to manage different kind of students data. To run it you would need both Visual Studio and MySQL data base installed locally. 
 
 To use it: 
 
