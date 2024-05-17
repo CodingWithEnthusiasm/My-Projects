@@ -1,3 +1,7 @@
+The Assembly calculator file can be runned on Debian-based system (like Ubuntu) with NASM shell installed on it 
+
+
+
 The StudentService project is a project created with a use of .NET framework and MySQL data base. To run it you would need both Visual Studio and MySQL data base installed locally. 
 
 To use it: 
