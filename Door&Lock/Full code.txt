@@ -1,0 +1,284 @@
+#include <Keypad.h>         
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
+
+
+
+#define LED_RED 12      
+#define LED_GREEN 13       
+#define SPEAKER A3        
+#define NUM 5    
+
+
+
+LiquidCrystal lcd(5, 4, 3, 2, A4, A5); //pins for the screen
+const byte ROWS = 4;                   //Ammount of the rows
+const byte COLS = 4;                   //Amount of the collumns
+char keys[ROWS][COLS] = 
+{ 
+     
+{'1','2','3','A'},
+{'4','5','6','B'},                     //Location of the keyboard keys
+{'7','8','9','C'},
+{'*','0','#','D'}
+
+};
+
+
+
+
+char key;                                 //Variable which stores pressed key
+byte rowPins[ROWS] = {A0, A1, 11, 10};    //Pins for the rows 
+byte colPins[COLS] = {9, 8, 7, 6};        //Pins for the collumns
+int LCDRow = 0;
+
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );   //keypad variable
+
+char temp[NUM] = { '0', '0', '0', '0', '0'};                                //Array where we temporary store the password, so we could then transfer it to the memory of arduino
+char memory [NUM]={ '0', '0', '0', '0', '0'};                               //Array which gets original password from the constant memory of arduino and stores it during array comparison 
+
+
+char buttons_pressed[NUM];  //Array which stores all further (wrong/correct) codes and compares them with memory array 
+int i=0;                    //Variable which counts the symbols of the original password 
+int mathces=0;              //Variable for counting the amount of successful comparisons
+int j=0;                    //Variable which counts characters for buttons_pressed array
+bool check_1=false;         //Variable which checks if the original password was already enetered  
+
+
+ 
+
+
+
+
+void setup()          
+{
+
+
+Serial.begin(9600);          //Setting this in order to have a possibility of printing in console
+lcd.begin(16, 2);            //Setting our LCD screen 
+ 
+if(check_1!=true)            //Checking if the origianl password was entered
+{
+
+LCDRow=0;                    //Setting the row variable to zero 
+lcd.setCursor(LCDRow, 0);    //Setting the cursor position to (0,0)
+lcd.print("Set:");           //Printing the word "Set:"
+LCDRow=4;                    //Setting the row variable to 4
+
+}
+  
+   
+  
+  
+  
+pinMode(LED_RED, OUTPUT);     
+pinMode(LED_RED, LOW);
+pinMode(LED_GREEN, OUTPUT);     //Setting the red and green diodes and also speaker
+pinMode(LED_GREEN, LOW);
+pinMode(SPEAKER, OUTPUT); 
+digitalWrite(SPEAKER, LOW); 
+  
+ 
+ 
+}
+
+
+
+void loop ()
+{ 
+   
+  
+ 
+   if(check_1==false)    //Checking if the original password was enetered
+ {                       
+      
+
+
+key = keypad.getKey();      //Getting the value from the getKey()
+ 
+
+if (key)                    //Checking if the user pressed on any buttons on the keypad using the value from getKey() function
+{
+
+
+
+digitalWrite (SPEAKER, HIGH);                                               
+delay (50);                      //Make beep sound for 50 miliseconds each time the user presses any button on the keypad 
+digitalWrite (SPEAKER, LOW);    
+
+
+lcd.print(key);                //Printing pressed button value in the console
+lcd.setCursor (++LCDRow, 0);   //Setting the cursor to the (0,0) position   
+
+
+
+temp[i]=key;                   //Asigning the start password to array
+EEPROM.write ( i, temp [ i ]); //Reading the temp array into memory
+i = i + 1;                     //Updating counter by 1
+
+   
+
+
+if(i == NUM)    //Check if the counter of temp array is equal to the amount buttons user need to press 
+{               
+ check_1=true;  //Setting the check_1 variable to true, so user won't set the password more then once 
+  
+  
+  
+ memset(temp, 0, sizeof(temp));    //erasing the temp array 
+if ( EEPROM.read ( 0 ) != 0xff ) 
+for (int i = 0; i <NUM ; ++i )
+{
+memory [ i ] = EEPROM.read ( i ); //Writing the temp array data to the const memory of arduino   
+}
+ 
+  
+  
+  
+lcd.clear();             //Clear the content on the screen 
+LCDRow=0;                //Set the row variable to zero
+lcd.print("ACCEPTED !"); //Print word "ACCEPTED !"
+LCDRow=0;                //Set the row to zero again 
+lcd.setCursor(LCDRow, 0);//Set the cursor position to (0,0)
+  
+digitalWrite (SPEAKER, HIGH);    
+digitalWrite (LED_GREEN, HIGH);     //Speaker makes sound and green diode turns on for 2 seconds                                  
+delay (2000);                       
+digitalWrite (SPEAKER, LOW);
+digitalWrite (LED_GREEN, LOW);
+lcd.clear();                        //Erase the content from the LCD screen 
+
+}
+
+  
+}
+   } 
+   
+ 
+  
+  if(check_1==true)     //Checking if the start password was enetred
+  {                     
+                       
+         
+    
+LCDRow=0;                  //Set the row variable to zero 
+lcd.setCursor(LCDRow, 0);  //Set the row position to to zero 
+lcd.print("Enter:");       //Print "Enter:" on the LCD screen 
+LCDRow=6+j;                //Set the position 6+j for each next enetred number
+lcd.setCursor(LCDRow, 0);  //Setting the cursor position to zero 
+    
+  
+    
+key = keypad.getKey();    //Getting the key value from the function
+   
+  if (key)                //Checking if the button was pressed by user 
+{
+
+digitalWrite (SPEAKER, HIGH);
+delay (50);                   //The same procedure as for start password
+digitalWrite (SPEAKER, LOW);
+    
+
+lcd.print(key);              //Pritning the pressed button on the LCD screen       
+lcd.setCursor (++LCDRow, 0); //Setting the proper for the cursor for each number, so they all won't be printed in the same position 
+    
+buttons_pressed [j] = key;  //But here we add to the second array which will be used for all further checks
+j++;
+    
+    
+
+  
+  if(j==NUM)              //If all 5 buttons was pressed for buttons_pressed array then start compare it with orginal code
+{
+
+
+for ( uint8_t i = 0; i < NUM; i++)
+{
+    
+ 
+if (buttons_pressed[i] == memory[i])  //Checking for matches
+{
+
+  mathces = mathces + 1;    //Amount of matches
+ 
+}
+    
+}    
+           
+if(mathces == NUM)       //If the amount of matches is equal to the amount of numbers we enter in keypad 
+{                
+lcd.clear();             //Erase the previous content and make beeping sounds for 2 seconds
+LCDRow=0;                //Set the row to zero
+lcd.print("CORRECT !");  //erase "CORRECT !"
+LCDRow=0;                //Set the row to zero again
+lcd.setCursor(LCDRow, 0);//Set the cursor position to the position (0,0)
+
+
+
+
+
+
+
+
+
+   
+digitalWrite (SPEAKER, HIGH);      
+digitalWrite (LED_GREEN, HIGH);   
+delay (2000);                      //Turn on the speaker and green diode for 2 seconds and then turn it off 
+digitalWrite (SPEAKER, LOW);
+digitalWrite (LED_GREEN, LOW); 
+lcd.clear();                       //Clear the content from the screen 
+j=0;                               //Set the counters of the second array and counter of matches to zero, so for next it loop it would start from the begining
+mathces=0;                         //Set the amount of mathces to zero for the next cycle 
+
+} 
+
+
+
+else 
+{   
+
+
+            
+lcd.clear();                       //As in the previous statement- erase the previous content                         
+LCDRow=0;                          //Set the row position back to 0
+lcd.print("WRONG !");              //Display the word correct on the screen 
+LCDRow=0;                          //Set the row variable to zero 
+lcd.setCursor(LCDRow, 0); 
+
+
+
+digitalWrite (LED_RED, HIGH);      
+delay (2000);                      //Turn on the red diode for 2 seconds and then turn it off 
+digitalWrite (LED_RED, LOW);
+lcd.clear();                       //Clean the content from the screen 
+
+
+
+
+
+j=0;          //As in the previous statement set the counters of the second array and counter of matches to zero, so when the next cycle will begin it will start from the begining
+mathces=0;    //And as in the previous case we are setting the amount of mathces to zero 
+    
+   
+}
+   
+   
+      
+  }
+
+   
+  
+  }
+
+     
+  }
+
+   
+}
+
+     
+
+ 
+
+
