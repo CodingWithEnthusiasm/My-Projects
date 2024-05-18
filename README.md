@@ -20,10 +20,12 @@
 
 To use it: 
 
-4.1 Import the "degreeproject" folder into your MySQL data base 
+5.1 Import the "degreeproject" folder into your MySQL data base 
 
-4.2 Go to the "Student Service" folder inside the project and in all files with ".cs" extension edit the connstr variable with your actual data base name, user and password
+5.2 Go to the "Student Service" folder inside the project and in all files with ".cs" extension edit the connstr variable with your actual data base name, user and password
 
-4.3 Open the project solution file in Visual Studio
+5.3 Open the project solution file in Visual Studio
 
-4.4 The login and password for manager role is UN1@uni.com and 1234, by using it you can add the student users with their own passwords and ids
+5.4 The login and password for manager role is UN1@uni.com and 1234, by using it you can add the student users with their own passwords and ids
+
+SimpleAndroidProject is a project writeen in C# with a set of simple features like revert of the string and a calculator which asks the user to choose the app for each operator. Requires an installed Android Stuido to use
