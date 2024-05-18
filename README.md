@@ -1,5 +1,7 @@
 1. Assembly calculator is a simple single digit calcularo project with multiple operators available which can be runned on any Debian-based system (like Ubuntu) with NASM shell installed on it 
 
+2. Borrow book is a borrow book app writeen in C# the user is needed Visual Studio to run the project, the login and password are admin and 123
+
 2. C++ SDL graphics project which generates a simple 3D figure image and can be runned on any IDE which supports C++ and SDL library
 
 3. GeoPulse application is a navigation application created with Python programming language and using OpenCage and OpenRoute services for converting actual addresses into coordinates points and Folium for the usage of interactive map, 
