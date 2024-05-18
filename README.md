@@ -30,4 +30,6 @@ To use it:
 
 6. SimpleAndroidProject is a project writeen in C# with a set of simple features like revert of the string and a calculator which asks the user to choose the app for each operator. Requires an installed Android Stuido to use
 
-7. The N_Queens is an app written in Python which can solve the puzzle of placing n queens on an n x n chessboard such that no two queens attack each other. The user can enter the n value
+7. The N_Queens is an app written in Python which can solve the puzzle of placing n queens on an n x n chessboard such that no two queens attack each other, the user can manually enter the n value. Pycharm is required to run it
+
+8.
