@@ -6,7 +6,14 @@
 
 4. The Door&Lock is a code and PDF document with description to my old Arduino project for door lock with code system. It can be runned on simulators like Tinkercad or real Arduino circuit :)
 
-5. Game of life is a Conway's Game of life algorithm with an actual animation of a process writeen in Python. Pycharm is required to run it
+5. GameOfLife is a Conway's Game of life algorithm with an actual animation of a process writeen in Python. Pycharm is required to run it
+
+6. GeneticAlgorithmSolution is an Python app which uses genetic algorithm to solve 8 queens problem. It uses the following elements of the algorithm:
+
+   8-digit, integer-value genome,
+   The fitness function of the form: f(configuration) = 28-number_of_attacks(configuration)
+   the genetic operators (roulette wheel selection, two-site crossover, mutation)
+
 
 3. GeoPulse application is a navigation application created with Python programming language and using OpenCage and OpenRoute services for converting actual addresses into coordinates points and Folium for the usage of interactive map, 
 
