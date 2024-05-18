@@ -10,8 +10,10 @@
 
 6. GeneticAlgorithmSolution is an Python app which uses genetic algorithm to solve 8 queens problem. It uses the following elements of the algorithm:
 
-   8-digit, integer-value genome,
+   8-digit integer-value genome
+
    The fitness function of the form: f(configuration) = 28-number_of_attacks(configuration)
+
    the genetic operators (roulette wheel selection, two-site crossover, mutation)
 
 
