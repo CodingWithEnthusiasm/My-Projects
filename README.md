@@ -4,7 +4,7 @@
 
 3. GeoPulse application is a navigation application created with Python programming language and using OpenCage and OpenRoute services for converting actual addresses into coordinates points and Folium for the usage of interactive map, 
 
-5. Joke server is a simple app written in Python which multiple comedians, multiple audience members and bounded joke buffer.
+4. Joke server is a simple app written in Python which multiple comedians, multiple audience members and bounded joke buffer.
 
 	The server takes the following parameter
 		BUFFER_SIZE  (INTEGER)  number of buffer slots, each capable of storing exactly one joke.
@@ -16,7 +16,7 @@
 		* fresh joke mode = always take the most recently produced one
 		* take whatever joke that has not been received yet 
 
-4. StudentService project is a project created with a use of .NET framework and MySQL data base and which allows the user to manage different kind of students data. To run it you would need both Visual Studio and MySQL data base installed locally. 
+5. StudentService project is a project created with a use of .NET framework and MySQL data base and which allows the user to manage different kind of students data. To run it you would need both Visual Studio and MySQL data base installed locally. 
 
 To use it: 
 
@@ -28,4 +28,6 @@ To use it:
 
 5.4 The login and password for manager role is UN1@uni.com and 1234, by using it you can add the student users with their own passwords and ids
 
-SimpleAndroidProject is a project writeen in C# with a set of simple features like revert of the string and a calculator which asks the user to choose the app for each operator. Requires an installed Android Stuido to use
+6. SimpleAndroidProject is a project writeen in C# with a set of simple features like revert of the string and a calculator which asks the user to choose the app for each operator. Requires an installed Android Stuido to use
+
+7. The N_Queens is an app written in Python which can solve the puzzle of placing n queens on an n x n chessboard such that no two queens attack each other. The user can enter the n value
