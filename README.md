@@ -75,9 +75,9 @@ It showed almost the same results as Sunday algorithm during the begining but wi
 
 13. PatternSearchC++ is a project for finding the patterns in text using different algorithms which can be as well oppened using the CodeBlocks. The detailed information about it together with my small research can be found in the SortingAlgorithmMaksymSemko file inside the project folder
 
-14. C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a service for students (can be openned in CodeBlocks as the previously mentioned projects)
+14. C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a bank system (can be openned in CodeBlocks as the previously mentioned projects)
 
-
+15. C++StudentConsoleApp is a one more simple C++ console project which uses list data structure and imitates student service
 
 
  
