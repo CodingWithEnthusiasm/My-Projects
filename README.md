@@ -47,7 +47,7 @@ To use it:
 
 11.4 The login and password for manager role is UN1@uni.com and 1234, by using it you can add the student users with their own passwords and ids
 
-12. SortingC++ is a C++ project which can be oppened in CodeBlocks. It compares merge sort, heap sort and quick sort algorithms execution speed in nanoseconds for sorted and shuffled arrays with the same input data. These algorithms are tested on arrays from size 100 to 10000, below you also find the brief conclusion for each algorithm from me:
+12. SortingC++ is a C++ project which can be oppened in CodeBlocks. It compares merge sort, heap sort and quick sort algorithms execution speed in nanoseconds for sorted and shuffled arrays with the same input data. These algorithms are tested on arrays from size 100 to 10000, below you also find the brief conclusion for each algorithm from 2021 me:
 
                                                                                     Brute Force 
 
@@ -75,7 +75,7 @@ It showed almost the same results as Sunday algorithm during the begining but wi
 
 13. PatternSearchC++ is a project for finding the patterns in text using different algorithms which can be as well oppened using the CodeBlocks. The detailed information about it together with my small research can be found in the SortingAlgorithmMaksymSemko file inside the project folder
 
-14. C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a service for students
+14. C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a service for students (can be openned in CodeBlocks as the previously mentioned projects)
 
 
 
