@@ -1,0 +1,14 @@
+# depslib dependency file v1.0
+1598851084 source:d:\data structures\lab12(fix)\main.cpp
+	<iostream>
+	<fstream>
+	"Sorted.h"
+	"Student.h"
+
+1598849733 d:\data structures\lab12(fix)\sorted.h
+	<stdexcept>
+	<iostream>
+
+1598850107 d:\data structures\lab12(fix)\student.h
+	<string>
+

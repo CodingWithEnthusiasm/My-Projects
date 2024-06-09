@@ -1,0 +1,7 @@
+123456;4.5;Kowalski J.
+167167;5;Williams A.
+342123;3.5;Weasley R.
+555555;4.5;Foster N.
+654321;4;Potter H.
+897678;5;Granger H.
+990032;4.5;Lovegood L.

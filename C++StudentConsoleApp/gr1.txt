@@ -1,0 +1,5 @@
+Kowalski Jan 123456 4.5
+Potter Harry 654321 4
+Granger Hermiona 897678 5
+Weasley Ronald 342123 3.5
+Lovegood Luna 990032 4.5
