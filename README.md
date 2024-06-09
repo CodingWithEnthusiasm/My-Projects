@@ -46,3 +46,5 @@ To use it:
 11.3 Open the project solution file in Visual Studio
 
 11.4 The login and password for manager role is UN1@uni.com and 1234, by using it you can add the student users with their own passwords and ids
+
+12. SortingC++ is a C++ project which can be oppened in CodeBlocks. It compares merge sort, heap sort and quick sort algorithms execution speed in nanoseconds for sorted and shuffled arrays with the same input data. These algorithms are tested on arrays from size 100 to 10000
