@@ -1,0 +1,43 @@
+# depslib dependency file v1.0
+1631284363 source:c:\users\Максим\desktop\aa project 1\aa_first\main.cpp
+	<iostream>
+	<fstream>
+	<chrono>
+	"Brute.h"
+	"Sunday.h"
+	"KMP.h"
+	"FSM.h"
+	"Rabin.h"
+
+1631279493 c:\users\Максим\desktop\aa project 1\aa_first\brute.h
+
+1631279493 c:\users\Максим\desktop\aa project 1\aa_first\sunday.h
+	<string>
+
+1631269887 c:\users\Максим\desktop\aa project 1\aa_first\kmp.h
+
+1631269887 c:\users\Максим\desktop\aa project 1\aa_first\fsm.h
+
+1631269887 c:\users\Максим\desktop\aa project 1\aa_first\rabin.h
+
+1631321140 source:d:\university\advanced algorithms\aa project 1\aa_first\main.cpp
+	<iostream>
+	<fstream>
+	<chrono>
+	"Brute.h"
+	"Sunday.h"
+	"KMP.h"
+	"FSM.h"
+	"Rabin.h"
+
+1631315494 d:\university\advanced algorithms\aa project 1\aa_first\brute.h
+
+1631315494 d:\university\advanced algorithms\aa project 1\aa_first\sunday.h
+	<string>
+
+1631305888 d:\university\advanced algorithms\aa project 1\aa_first\kmp.h
+
+1631305888 d:\university\advanced algorithms\aa project 1\aa_first\fsm.h
+
+1631305888 d:\university\advanced algorithms\aa project 1\aa_first\rabin.h
+

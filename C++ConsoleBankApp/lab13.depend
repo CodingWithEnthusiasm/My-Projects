@@ -1,0 +1,27 @@
+# depslib dependency file v1.0
+1598856139 source:d:\data structures\lab13\main.cpp
+	<iostream>
+	<fstream>
+	"dqueue.h"
+	"bank.h"
+
+1598851571 d:\data structures\lab13\dqueue.h
+	<stdexcept>
+	<iostream>
+
+1598856374 d:\data structures\lab13\bank.h
+	<string>
+
+1598892140 source:d:\university\data base programming\lab13(solved)\main.cpp
+	<iostream>
+	<fstream>
+	"dqueue.h"
+	"bank.h"
+
+1598887572 d:\university\data base programming\lab13(solved)\dqueue.h
+	<stdexcept>
+	<iostream>
+
+1598892376 d:\university\data base programming\lab13(solved)\bank.h
+	<string>
+

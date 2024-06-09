@@ -1,0 +1,42 @@
+# depslib dependency file v1.0
+1598879179 source:d:\data structures\lab14\main.cpp
+	<iostream>
+	<fstream>
+	"dqueue.h"
+	"tax.h"
+
+1598861463 d:\data structures\lab14\dqueue.h
+	<stdexcept>
+	<iostream>
+
+1598873258 d:\data structures\lab14\tax.h
+
+1598893148 source:d:\data structures\lab14(solved)\main.cpp
+	<iostream>
+	<fstream>
+	<deque>
+	"tax.h"
+
+1598893427 d:\data structures\lab14(solved)\tax.h
+
+1598929150 source:d:\university\data base programming\lab14(solved)\main.cpp
+	<iostream>
+	<fstream>
+	<deque>
+	"tax.h"
+
+1598929428 d:\university\data base programming\lab14(solved)\tax.h
+
+1717964853 source:d:\university\data base programming\verysimplec++taxapp\main.cpp
+	<iostream>
+	<fstream>
+	"dqueue.h"
+	<deque>
+	"tax.h"
+
+1598897464 d:\university\data base programming\verysimplec++taxapp\dqueue.h
+	<stdexcept>
+	<iostream>
+
+1598929428 d:\university\data base programming\verysimplec++taxapp\tax.h
+
