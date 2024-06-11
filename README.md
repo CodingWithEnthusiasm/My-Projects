@@ -53,7 +53,7 @@ To use it:
 
 14. C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a bank system (can be openned in CodeBlocks as the previously mentioned projects)
 
-15. C++StudentConsoleApp is a one more simple C++ console project which uses list data structure and imitates student service
+15. C++StudentConsoleApp is a one more simple C++ console project which uses linked list and imitates student service
 
 
  
