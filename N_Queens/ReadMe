@@ -1,0 +1,1 @@
+The N_Queens is an app written in Python which can solve the puzzle of placing n queens on an n x n chessboard such that no two queens attack each other, the user can manually enter the n value. Pycharm is required to run it
