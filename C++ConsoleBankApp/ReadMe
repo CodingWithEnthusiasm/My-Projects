@@ -1,1 +1,1 @@
-C++ConsoleBankApp and C++ConsoleTaxApp are simple C++ console projects which implement double quque data structure and imitate a service for collecting taxes and a bank system (can be openned in CodeBlocks as the previously mentioned projects)
+C++ConsoleBankApp is simple C++ console project which implements double quque data structure and imitates a bank system service(can be openned in CodeBlocks)
