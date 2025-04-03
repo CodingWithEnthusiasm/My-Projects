@@ -1,0 +1,568 @@
+import os
+import joblib
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import torch
+from torch.utils.data import Dataset
+from tqdm import tk
+from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
+import gensim.downloader as api
+from sklearn.model_selection import train_test_split
+from tkinter import Tk, Label, Button, Entry
+from collections import Counter, defaultdict
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.probability import FreqDist
+from scipy.sparse import csr_matrix
+import pyperclip
+import threading
+import math
+import tkinter as tk
+from tkinter import messagebox
+
+# Global variables
+model = None
+class_labels = None
+vocab = None
+doc_freq = None
+word2vec_model = None
+tokenizer = None
+num_train_samples = None
+result_labels = []
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+#Configuring Inter-Op Parallelism
+config = tf.compat.v1.ConfigProto()
+config.inter_op_parallelism_threads = 4
+config.intra_op_parallelism_threads = 4
+
+session = tf.compat.v1.Session(config=config)
+tf.compat.v1.keras.backend.set_session(session)
+
+
+# Function to copy result to clipboard
+def copy_to_clipboard():
+    pyperclip.copy(result_label.cget("text"))
+    messagebox.showinfo("Copied", "Result copied to clipboard!")
+
+# Function to handle closing the application
+def on_closing():
+    root.destroy()
+
+# Initialize the UI of the application
+root = Tk()
+root.title("Emotion Detector")
+root.geometry("600x600")
+
+# Load and preprocess the data from csv file
+file_path = 'tweet_emotions.csv'
+data = pd.read_csv(file_path)
+
+
+# Text Preprocessing
+def preprocess_text(text):
+    tokens = word_tokenize(text.lower())
+    filtered_tokens = [word for word in tokens if word.isalpha() and word not in stopwords.words('english')]
+    return filtered_tokens
+
+
+# Function to compute TF-IDF for a given corpus
+def compute_tf_idf(corpus, max_features=1000):
+    tokenized_corpus = [preprocess_text(doc) for doc in corpus]
+    term_frequencies = [FreqDist(doc) for doc in tokenized_corpus]
+
+    doc_freq = defaultdict(int)
+    for doc in tokenized_corpus:
+        for word in set(doc):
+            doc_freq[word] += 1
+
+    vocab = sorted(doc_freq, key=doc_freq.get, reverse=True)[:max_features]
+
+    tf_idf = []
+    for term_freq in term_frequencies:
+        doc_tf_idf = {}
+        doc_length = sum(term_freq.values())  # Total number of words in the document
+        for word in vocab:
+            if word in term_freq:
+                tf = term_freq[word] / doc_length
+                idf = math.log(len(corpus) / (1 + doc_freq[word]))
+                doc_tf_idf[word] = tf * idf
+        tf_idf.append(doc_tf_idf)
+
+    return tf_idf, tokenized_corpus, vocab, doc_freq
+
+
+# Function to vectorize TF-IDF into a sparse matrix
+def vectorize(tf_idf, vocab):
+    vectors = []
+    for doc_tf_idf in tf_idf:
+        vector = [doc_tf_idf.get(word, 0) for word in vocab]
+        vectors.append(vector)
+    return csr_matrix(np.array(vectors))
+
+
+# Function to oversample the data to handle class imbalance
+def oversample(X, y):
+    counts = Counter(y)
+    max_count = max(counts.values())
+    oversampled_X = []
+    oversampled_y = []
+    for label in counts:
+        num_to_add = max_count - counts[label]
+        label_indices = [i for i in range(len(y)) if y[i] == label]
+        oversampled_X.extend(X[label_indices].toarray())
+        oversampled_y.extend([label] * len(label_indices))
+        for _ in range(num_to_add):
+            rand_idx = np.random.choice(label_indices)
+            oversampled_X.append(X[rand_idx].toarray().flatten())
+            oversampled_y.append(label)
+    return csr_matrix(oversampled_X), np.array(oversampled_y)
+
+
+# Decision Tree class for Traditional ML
+class DecisionTree:
+    def __init__(self, depth=5, min_samples_split=2):
+        self.depth = depth
+        self.min_samples_split = min_samples_split
+        self.tree = None
+
+    # Method to fit the decision tree model
+    def fit(self, X, y):
+        self.tree = self._grow_tree(X, y)
+
+    # Recursive method to grow the tree
+    def _grow_tree(self, X, y, depth=0):
+        num_samples, num_features = X.shape
+        num_labels = len(np.unique(y))
+
+        if depth >= self.depth or num_labels == 1 or num_samples < self.min_samples_split:
+            return self._most_common_label(y)
+
+        feat_idxs = np.random.choice(num_features, num_features, replace=True)
+        best_feat, best_thresh = self._best_criteria(X, y, feat_idxs)
+
+        left_idxs, right_idxs = self._split(X[:, best_feat].toarray().flatten(), best_thresh)
+
+        if len(left_idxs) == 0 or len(right_idxs) == 0:
+            return self._most_common_label(y)
+
+        left = self._grow_tree(X[left_idxs, :], y[left_idxs], depth + 1)
+        right = self._grow_tree(X[right_idxs, :], y[right_idxs], depth + 1)
+        return (best_feat, best_thresh, left, right)
+
+    # Method to find the best criteria for splitting the tree
+    def _best_criteria(self, X, y, feat_idxs):
+        best_gain = -1
+        split_idx, split_thresh = None, None
+        for feat_idx in feat_idxs:
+            X_column = X[:, feat_idx].toarray().flatten()
+            thresholds = np.unique(X_column)
+            for threshold in thresholds:
+                gain = self._information_gain(y, X_column, threshold)
+                if gain > best_gain:
+                    best_gain = gain
+                    split_idx = feat_idx
+                    split_thresh = threshold
+        return split_idx, split_thresh
+
+    # Method to calculate the information gain for a split
+    def _information_gain(self, y, X_column, split_thresh):
+        parent_entropy = self._entropy(y)
+        left_idxs, right_idxs = self._split(X_column, split_thresh)
+        if len(left_idxs) == 0 or len(right_idxs) == 0:
+            return 0
+
+        n = len(y)
+        n_l, n_r = len(left_idxs), len(right_idxs)
+        e_l, e_r = self._entropy(y[left_idxs]), self._entropy(y[right_idxs])
+        child_entropy = (n_l / n) * e_l + (n_r / n) * e_r
+        return parent_entropy - child_entropy
+
+    # Method to split the data into left and right branches
+    def _split(self, X_column, split_thresh):
+        left_idxs = np.argwhere(X_column <= split_thresh).flatten()
+        right_idxs = np.argwhere(X_column > split_thresh).flatten()
+        return left_idxs, right_idxs
+
+    # Method to calculate the entropy of the data
+    def _entropy(self, y):
+        hist = np.bincount(y)
+        ps = hist / len(y)
+        return -np.sum([p * np.log2(p) for p in ps if p > 0])
+
+    # Method to find the most common label in the data
+    def _most_common_label(self, y):
+        return np.bincount(y).argmax()
+
+    # Method to predict the label for the input data
+    def predict(self, X):
+        return np.array([self._traverse_tree(x, self.tree) for x in X])
+
+    # Recursive method to traverse the tree and make a prediction
+    def _traverse_tree(self, x, tree):
+        if not isinstance(tree, tuple):
+            return tree
+        feature_idx, threshold, left, right = tree
+        feature_value = x[0, feature_idx]  # Correctly access the feature value from sparse matrix
+        if feature_value <= threshold:
+            return self._traverse_tree(x, left)
+        return self._traverse_tree(x, right)
+
+
+# Class to implement a Random Forest
+class RandomForest:
+    def __init__(self, n_trees=10, depth=5, min_samples_split=2):
+        self.n_trees = n_trees
+        self.trees = []
+        self.depth = depth
+        self.min_samples_split = min_samples_split
+
+    # Method to fit the random forest model
+    def fit(self, X, y):
+        for _ in range(self.n_trees):
+            tree = DecisionTree(depth=self.depth, min_samples_split=self.min_samples_split)
+            idxs = np.random.choice(X.shape[0], X.shape[0], replace=True)
+            X_sample = X[idxs, :]
+            y_sample = y[idxs]
+            tree.fit(X_sample, y_sample)
+            self.trees.append(tree)
+
+    # Method to predict the label for the input data
+    def predict(self, X):
+        tree_preds = np.array([tree.predict(X) for tree in self.trees])
+        return np.array([np.bincount(tree_pred).argmax() for tree_pred in tree_preds.T])
+
+    # Method to predict probabilities for each class
+    def predict_proba(self, X):
+        tree_preds = np.array([tree.predict(X) for tree in self.trees])
+        proba = []
+        num_classes = len(np.unique(tree_preds))
+        for preds in tree_preds.T:
+            counts = np.bincount(preds, minlength=num_classes)
+            proba.append(counts / len(self.trees))
+        return np.array(proba)
+
+
+# LSTM with GloVe Approach
+def vectorize_with_embeddings(texts, model):
+    vectors = []
+    embedding_dim = model.vector_size  # Get the embedding dimension (e.g., 100 for GloVe embeddings)
+
+    for text in texts:
+        tokens = preprocess_text(text)
+        valid_tokens = [model[word] for word in tokens if word in model]
+
+        if valid_tokens:
+            # Calculate the mean of the valid token vectors
+            text_vector = np.mean(valid_tokens, axis=0)
+        else:
+            # If there are no valid tokens, return a zero vector with the correct dimensions
+            text_vector = np.zeros(embedding_dim)
+
+        vectors.append(text_vector)
+
+    vectors = np.vstack(vectors)
+    return vectors
+
+# Function to vectorize text data using pre-trained Word2Vec embeddings
+def build_lstm_model(input_shape, output_dim):
+    model = Sequential()
+    model.add(LSTM(128, input_shape=input_shape, dropout=0.2, recurrent_dropout=0.2))
+    model.add(Dense(output_dim, activation='softmax'))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+
+# BERT Dataset Class
+class BERTDataset(Dataset):
+    def __init__(self, texts, labels, tokenizer, max_len):
+        self.texts = texts
+        self.labels = labels
+        self.tokenizer = tokenizer
+        self.max_len = max_len
+
+    # Method to return the length of the dataset
+    def __len__(self):
+        return len(self.texts)
+
+    # Method to get a single data point from the dataset
+    def __getitem__(self, item):
+        encoding = self.tokenizer.encode_plus(
+            self.texts[item],
+            add_special_tokens=True,
+            max_length=self.max_len,
+            return_token_type_ids=False,
+            padding='max_length',
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors='pt',
+        )
+        return {
+            'input_ids': encoding['input_ids'].flatten(),
+            'attention_mask': encoding['attention_mask'].flatten(),
+            'labels': torch.tensor(self.labels[item], dtype=torch.long)
+        }
+
+
+# Function to save the model and metadata
+def save_model(method, X_train=None):
+    global model, class_labels, vocab, doc_freq, word2vec_model, tokenizer, num_train_samples
+    if method == 'traditional_ml':
+        num_train_samples = X_train.shape[0]
+        joblib.dump((model, class_labels, doc_freq, vocab, num_train_samples), 'emotion_detector_traditional.pkl')
+    elif method == 'lstm_glove':
+        model.save('emotion_detector_lstm_glove.h5')
+        joblib.dump((class_labels, word2vec_model), 'emotion_detector_lstm_glove_meta.pkl')
+    elif method == 'bert':
+        joblib.dump((model, class_labels, tokenizer), 'emotion_detector_bert.pkl')
+
+
+# Function to enable UI inputs
+def enable_input():
+    text_field.config(state="normal")
+    detect_button.config(state="normal")
+
+
+# Function to disable UI inputs
+def disable_input():
+    text_field.config(state="disabled")
+    detect_button.config(state="disabled")
+
+
+# Function to train or load the model
+def train_or_load_model():
+    global model, class_labels, vocab, doc_freq, word2vec_model, tokenizer, num_train_samples
+
+    status_label.config(text="Checking for existing models...")
+
+    try:
+        if os.path.exists('emotion_detector_traditional.pkl'):
+            model, class_labels, doc_freq, vocab, num_train_samples = joblib.load('emotion_detector_traditional.pkl')
+            status_label.config(text="Model loaded successfully (Traditional ML). You can now detect emotions.")
+            enable_input()
+            return
+
+        elif os.path.exists('emotion_detector_lstm_glove.h5') and os.path.exists(
+                'emotion_detector_lstm_glove_meta.pkl'):
+            model = tf.keras.models.load_model('emotion_detector_lstm_glove.h5')
+            class_labels, word2vec_model = joblib.load('emotion_detector_lstm_glove_meta.pkl')
+            status_label.config(text="Model loaded successfully (LSTM with GloVe). You can now detect emotions.")
+            enable_input()
+            return
+
+        elif os.path.exists('emotion_detector_bert.pkl'):
+            model, class_labels, tokenizer = joblib.load('emotion_detector_bert.pkl')
+            status_label.config(text="Model loaded successfully (BERT). You can now detect emotions.")
+            enable_input()
+            return
+
+        # No model found, ask the user to select a training method
+        status_label.config(text="No model found. Please select a training method.")
+        traditional_button.pack(pady=10)
+        lstm_glove_button.pack(pady=10)
+        bert_button.pack(pady=10)
+
+    except Exception as e:
+        status_label.config(text=f"Error loading model: {str(e)}")
+
+
+# Function to start training the TF-IDF and RandomForest model
+def on_traditional_ml():
+    status_label.config(text="Training using Traditional ML...")
+    disable_input()
+    traditional_button.pack_forget()
+    lstm_glove_button.pack_forget()
+    bert_button.pack_forget()
+    threading.Thread(target=train_traditional_ml).start()
+
+# Function to train the model with TF-IDF and RandomForest
+def train_traditional_ml():
+    global model, class_labels, vocab, doc_freq, num_train_samples, X_train, X_test, y_train, y_test
+    # Preprocessing and training logic for Traditional ML
+    y = data['sentiment'].factorize()[0]
+    tf_idf, _, vocab, doc_freq = compute_tf_idf(data['content'].values)
+    X_vectors = vectorize(tf_idf, vocab)
+    X_vectors_resampled, y_resampled = oversample(X_vectors, y)
+    X_train, X_test, y_train, y_test = train_test_split(X_vectors_resampled, y_resampled, test_size=0.2)
+    model = RandomForest(n_trees=10, depth=5)
+    model.fit(X_train, y_train)
+    save_model('traditional_ml', X_train=X_train)
+    status_label.config(text="Training complete (Traditional ML). You can now detect emotions.")
+    enable_input()
+
+# Function to start training the LSTM with GloVe model
+def on_lstm_glove():
+    status_label.config(text="Training using LSTM with GloVe...")
+    disable_input()
+    traditional_button.pack_forget()
+    lstm_glove_button.pack_forget()
+    bert_button.pack_forget()
+    threading.Thread(target=train_lstm_glove).start()
+
+# Function to train the LSTM model using GloVe embeddings
+def train_lstm_glove():
+    global model, class_labels, word2vec_model, num_train_samples, X_train, X_test, y_train, y_test
+    word2vec_model = api.load("glove-wiki-gigaword-100")
+    y = data['sentiment'].factorize()[0]
+    X_vectors = vectorize_with_embeddings(data['content'].values, word2vec_model)
+    X_train, X_test, y_train, y_test = train_test_split(X_vectors, y, test_size=0.2)
+    model = build_lstm_model(input_shape=(1, X_train.shape[1]), output_dim=len(np.unique(y)))
+    model.fit(np.expand_dims(X_train, axis=1), y_train, validation_data=(np.expand_dims(X_test, axis=1), y_test),
+              epochs=5, batch_size=64)
+    save_model('lstm_glove')
+    status_label.config(text="Training complete (LSTM with GloVe). You can now detect emotions.")
+    enable_input()
+
+# Function to start training the BERT model
+def on_bert():
+    status_label.config(text="Training using BERT...")
+    disable_input()
+    traditional_button.pack_forget()
+    lstm_glove_button.pack_forget()
+    bert_button.pack_forget()
+    threading.Thread(target=train_bert).start()
+
+# Function to train the BERT model for emotion detection
+def train_bert():
+    global model, class_labels, tokenizer, num_train_samples, X_train, X_test, y_train, y_test
+    y = data['sentiment'].factorize()[0]
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    dataset = BERTDataset(data['content'].values, y, tokenizer, max_len=128)
+    training_args = TrainingArguments(
+        output_dir='./results',
+        num_train_epochs=3,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
+        warmup_steps=500,
+        weight_decay=0.01,
+        logging_dir='./logs',
+    )
+    model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(np.unique(y)))
+    model.to(device)
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=dataset,
+    )
+    trainer.train()
+    save_model('bert')
+    status_label.config(text="Training complete (BERT). You can now detect emotions.")
+    enable_input()
+
+
+# Function to detect emotion
+def detect_emotion():
+    input_text = text_field.get()
+
+    # For Traditional ML Model
+    if isinstance(model, RandomForest):
+        processed_input = preprocess_text(input_text)
+        input_tf_idf = {word: 0 for word in vocab}
+        term_freq = FreqDist(processed_input)
+        doc_length = sum(term_freq.values())
+        for word in processed_input:
+            if word in vocab:
+                tf = term_freq[word] / doc_length
+                idf = math.log(num_train_samples / (1 + doc_freq[word]))
+                input_tf_idf[word] = tf * idf
+        input_vector = vectorize([input_tf_idf], vocab)
+        probabilities = model.predict_proba(input_vector)[0]
+
+    # For LSTM with GloVe Model (check if word2vec_model is not None)
+    elif word2vec_model is not None:
+        input_vector = vectorize_with_embeddings([input_text], word2vec_model)
+        input_vector = np.expand_dims(input_vector, axis=1)
+        probabilities = model.predict(input_vector)[0]
+
+    # For BERT Model (check if tokenizer is defined)
+    elif tokenizer is not None:
+        input_vector = tokenizer.encode_plus(
+            input_text,
+            add_special_tokens=True,
+            max_length=128,
+            return_token_type_ids=False,
+            padding='max_length',
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors='pt',
+        )
+        input_vector = {k: v.to(device) for k, v in input_vector.items()}
+        with torch.no_grad():
+            outputs = model(input_vector['input_ids'], input_vector['attention_mask'])
+            probabilities = torch.nn.functional.softmax(outputs.logits, dim=1)[0].cpu().numpy()
+
+    else:
+        messagebox.showerror("Error", "No valid model loaded.")
+        return
+
+    emotion_mapping = {
+        0: "empty",
+        1: "sadness",
+        2: "enthusiasm",
+        3: "neutral",
+        4: "worry",
+        5: "surprise",
+        6: "love",
+        7: "fun",
+        8: "hate",
+        9: "happiness",
+        10: "boredom",
+        11: "relief",
+        12: "anger"
+    }
+
+    # Clear previous results
+    for label in result_labels:
+        label.destroy()
+    result_labels.clear()
+
+    # Find the emotion with the highest probability
+    max_prob_idx = np.argmax(probabilities)
+
+    # Display each emotion with its probability
+    for i in range(len(emotion_mapping)):
+        emotion = emotion_mapping.get(i, f"Unknown-{i}")
+        prob = probabilities[i] if i < len(probabilities) else 0.0
+        if i == max_prob_idx:
+            label = tk.Label(root, text=f"{emotion}: {prob:.4f}", font=('Helvetica', 14), fg="red")
+        else:
+            label = tk.Label(root, text=f"{emotion}: {prob:.4f}", font=('Helvetica', 14))
+        label.pack()
+        result_labels.append(label)
+
+
+#UI window related code
+root.protocol("WM_DELETE_WINDOW", on_closing)
+
+status_label = Label(root, text="Initializing...", font=('Helvetica', 14))
+status_label.pack(pady=20)
+
+
+text_field = Entry(root, width=60, font=('Helvetica', 14), state="disabled")
+text_field.pack(pady=20)
+
+
+detect_button = Button(root, text="Detect", state="disabled", font=('Helvetica', 14), command=detect_emotion)
+detect_button.pack(pady=20, ipadx=20, ipady=10)
+
+
+traditional_button = Button(root, text="Traditional ML", font=('Helvetica', 14), command=on_traditional_ml)
+lstm_glove_button = Button(root, text="LSTM with GloVe", font=('Helvetica', 14), command=on_lstm_glove)
+bert_button = Button(root, text="BERT", font=('Helvetica', 14), command=on_bert)
+
+
+result_label = Label(root, text="Emotion Probabilities: None", font=('Helvetica', 14), justify="left")
+result_label.pack(pady=20)
+
+
+copy_button = Button(root, text="Copy", command=copy_to_clipboard, font=('Helvetica', 14))
+copy_button.pack(pady=20, ipadx=20, ipady=10)
+
+# Attempt to load any existing model on startup
+train_or_load_model()
+
+# Start the application
+root.mainloop()
