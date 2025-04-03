@@ -55,6 +55,7 @@ To use it:
 
 15. C++StudentConsoleApp is a one more simple C++ console project which uses linked list and imitates student service
 
+16. EmotionDetection the UI application which detects multiple emotions in the text provided by the user and uses excel file which is filled with twitter comments for machine learning( I don't remember in which repository or website I found this file). The user is able to select one of the three machine learning algorithms for emotions detection from the appeared UI window, after selecting it, the data file will start to be generated, after generation is completed user can type any text and press "detect" button to detect emotions in text. If user would want to use other algorithms after that, he would need to manually remove the previousl data set file and restart the application. PyCharm is required to to build and run this application. 
 
  
 
